@@ -29,20 +29,30 @@
 		812DD8062FD70694000DA591 /* MusicPlayerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MusicPlayerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		81EC02932FDCA3810062C446 /* Exceptions for "MusicPlayer" folder in "MusicPlayerTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/Audio/carnaval.mp3,
+				Resources/Audio/escape_your_love.mp3,
+				Resources/Audio/kontraa_water.mp3,
+			);
+			target = 812DD7FB2FD70694000DA591 /* MusicPlayerTests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		812DD7F12FD70694000DA591 /* MusicPlayer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				81EC02932FDCA3810062C446 /* Exceptions for "MusicPlayer" folder in "MusicPlayerTests" target */,
+			);
 			path = MusicPlayer;
 			sourceTree = "<group>";
 		};
 		812DD7FF2FD70694000DA591 /* MusicPlayerTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = MusicPlayerTests;
-			sourceTree = "<group>";
-		};
-		812DD8092FD70694000DA591 /* MusicPlayerUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = MusicPlayerUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -77,7 +87,6 @@
 			children = (
 				812DD7F12FD70694000DA591 /* MusicPlayer */,
 				812DD7FF2FD70694000DA591 /* MusicPlayerTests */,
-				812DD8092FD70694000DA591 /* MusicPlayerUITests */,
 				812DD7F02FD70694000DA591 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -152,9 +161,6 @@
 			);
 			dependencies = (
 				812DD8082FD70694000DA591 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				812DD8092FD70694000DA591 /* MusicPlayerUITests */,
 			);
 			name = MusicPlayerUITests;
 			packageProductDependencies = (

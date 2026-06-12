@@ -31,12 +31,17 @@ class PlayerViewModel: NSObject, AVAudioPlayerDelegate {
         currentSong?.duration ?? 0
     }
     
-    override init() {
+    init(songs: [Song]) {
         super.init()
+        self.songs = songs
+    }
+    
+    override convenience init() {
+        self.init(songs: [])
         self.songs = [
-            self.loadBundled("carnaval", title:"Carnaval"),
-            self.loadBundled("escape_your_love", title: "Escape Your Love"),
-            self.loadBundled("kontraa_water", title: "Kontraa - Water")
+            loadBundled("carnaval", title:"Carnaval"),
+            loadBundled("escape_your_love", title: "Escape Your Love"),
+            loadBundled("kontraa_water", title: "Kontraa - Water")
         ].compactMap { $0 } // elimina los nils
     }
     
@@ -85,6 +90,7 @@ class PlayerViewModel: NSObject, AVAudioPlayerDelegate {
     
     func seek(to time: TimeInterval) {
         audioPlayer?.currentTime = time
+        self.currentTime = time
     }
     
     func beginScrubbing() { isDragging = true}
@@ -98,11 +104,13 @@ class PlayerViewModel: NSObject, AVAudioPlayerDelegate {
         play(songs[nextIdx])
         return true
     }
-    func previous() {
-        guard let idx = currentIndex else { return }
+    @discardableResult
+    func previous() -> Bool {
+        guard let idx = currentIndex else { return false }
         let previousIdx = idx - 1
-        if previousIdx < 0 { return }
+        if previousIdx < 0 { return false }
         play(songs[previousIdx])
+        return true
     }
     
     nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
