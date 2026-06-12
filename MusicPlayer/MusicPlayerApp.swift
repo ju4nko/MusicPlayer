@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct MusicPlayerApp: App {
     @State private var viewModel = PlayerViewModel()
+    
     var body: some Scene {
         WindowGroup {
             ContentView(viewModel: viewModel)
