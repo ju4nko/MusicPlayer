@@ -15,12 +15,5 @@ struct Song: Identifiable, Hashable {
     let artist: String?
     let artwork: URL?
     
-    
-    static func bundled(_ resource: String, title: String, artist: String? = nil) -> Song? {
-        guard let url = Bundle.main.url(forResource: resource, withExtension: "mp3") else { return nil }
-        let song: Song = Song(title: title, url: url, duration: 0, artist: artist, artwork: nil)
-        return song
-    }
-    
 }
 

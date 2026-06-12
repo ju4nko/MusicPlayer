@@ -26,15 +26,15 @@ class PlayerViewModel: NSObject, AVAudioPlayerDelegate {
     private var isDragging = false
     
     var duration: TimeInterval {
-        audioPlayer?.duration ?? 0
+        currentSong?.duration ?? 0
     }
     
     override init() {
         super.init()
         self.songs = [
-            Song.bundled("carnaval", title:"Carnaval"),
-            Song.bundled("escape_your_love", title: "Escape Your Love"),
-            Song.bundled("kontraa_water", title: "Kontraa - Water")
+            self.loadBundled("carnaval", title:"Carnaval", artist: nil),
+            self.loadBundled("escape_your_love", title: "Escape Your Love", artist: nil),
+            self.loadBundled("kontraa_water", title: "Kontraa - Water", artist: nil)
         ].compactMap { $0 } // elimina los nils
     }
     
@@ -118,5 +118,12 @@ class PlayerViewModel: NSObject, AVAudioPlayerDelegate {
     private var currentIndex: Int? {
         guard let currentSong else { return nil }
         return songs.firstIndex(where: { $0.id == currentSong.id })
+    }
+    
+    private func loadBundled(_ name: String, title: String, artist: String?) -> Song? {
+        guard let url = Bundle.main.url(forResource: name, withExtension: "mp3") else { return nil }
+        guard let probe = try? AVAudioPlayer(contentsOf: url) else {return nil}
+        let song: Song = Song(title: title, url: url, duration: probe.duration, artist: artist, artwork: nil)
+        return song
     }
 }
