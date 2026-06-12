@@ -8,6 +8,8 @@
 import Foundation
 import Observation
 import AVFoundation
+import AppKit
+import UniformTypeIdentifiers
 
 @MainActor
 @Observable
@@ -32,13 +34,26 @@ class PlayerViewModel: NSObject, AVAudioPlayerDelegate {
     override init() {
         super.init()
         self.songs = [
-            self.loadBundled("carnaval", title:"Carnaval", artist: nil),
-            self.loadBundled("escape_your_love", title: "Escape Your Love", artist: nil),
-            self.loadBundled("kontraa_water", title: "Kontraa - Water", artist: nil)
+            self.loadBundled("carnaval", title:"Carnaval"),
+            self.loadBundled("escape_your_love", title: "Escape Your Love"),
+            self.loadBundled("kontraa_water", title: "Kontraa - Water")
         ].compactMap { $0 } // elimina los nils
     }
     
-    func loadSongs() {}
+    func loadSongs() {
+        // Creamos y configuramos el panel
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = true
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowedContentTypes = [.audio]
+        // Ejecutamos el Modal
+        guard panel.runModal() == .OK else { return }
+        let urls = panel.urls // [URL] de lo que eligió el usuario
+        let newSongs = urls.compactMap { makeSong(from: $0) }
+        songs.append(contentsOf: newSongs)
+        
+    }
     
     func play(_ song: Song) {
         do {
@@ -120,10 +135,15 @@ class PlayerViewModel: NSObject, AVAudioPlayerDelegate {
         return songs.firstIndex(where: { $0.id == currentSong.id })
     }
     
-    private func loadBundled(_ name: String, title: String, artist: String?) -> Song? {
+    private func loadBundled(_ name: String, title: String) -> Song? {
         guard let url = Bundle.main.url(forResource: name, withExtension: "mp3") else { return nil }
+        return makeSong(from: url, title: title)
+    }
+    
+    private func makeSong(from url: URL, title: String? = nil) -> Song? {
+        let finalTitle = title ?? url.deletingPathExtension().lastPathComponent
         guard let probe = try? AVAudioPlayer(contentsOf: url) else {return nil}
-        let song: Song = Song(title: title, url: url, duration: probe.duration, artist: artist, artwork: nil)
+        let song: Song = Song(title: finalTitle, url: url, duration: probe.duration, artist: nil, artwork: nil)
         return song
     }
 }
