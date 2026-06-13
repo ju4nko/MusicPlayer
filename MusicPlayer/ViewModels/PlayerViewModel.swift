@@ -38,26 +38,7 @@ class PlayerViewModel: NSObject, AVAudioPlayerDelegate {
     
     override convenience init() {
         self.init(songs: [])
-        self.songs = [
-            loadBundled("carnaval", title:"Carnaval"),
-            loadBundled("escape_your_love", title: "Escape Your Love"),
-            loadBundled("kontraa_water", title: "Kontraa - Water")
-        ].compactMap { $0 } // elimina los nils
-    }
-    
-    func loadSongs() {
-        // Creamos y configuramos el panel
-        let panel = NSOpenPanel()
-        panel.allowsMultipleSelection = true
-        panel.canChooseDirectories = false
-        panel.canChooseFiles = true
-        panel.allowedContentTypes = [.audio]
-        // Ejecutamos el Modal
-        guard panel.runModal() == .OK else { return }
-        let urls = panel.urls // [URL] de lo que eligió el usuario
-        let newSongs = urls.compactMap { makeSong(from: $0) }
-        songs.append(contentsOf: newSongs)
-        
+        self.songs = loadMusicFolder()
     }
     
     func play(_ song: Song) {
@@ -153,5 +134,16 @@ class PlayerViewModel: NSObject, AVAudioPlayerDelegate {
         guard let probe = try? AVAudioPlayer(contentsOf: url) else {return nil}
         let song: Song = Song(title: finalTitle, url: url, duration: probe.duration, artist: nil, artwork: nil)
         return song
+    }
+    
+    private func loadMusicFolder() -> [Song] {
+        let fm = FileManager.default
+        guard let musicURL = fm.urls(for: .musicDirectory, in: .userDomainMask).first else {
+            return []
+        }
+        let resolvedURL = musicURL.resolvingSymlinksInPath()
+        let files = (try? fm.contentsOfDirectory(at: resolvedURL, includingPropertiesForKeys: nil)) ?? []
+        let mp3s = files.filter { $0.pathExtension.lowercased() == "mp3" }
+        return mp3s.compactMap { makeSong(from: $0) }
     }
 }

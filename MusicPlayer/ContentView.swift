@@ -13,9 +13,6 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            Button("Abrir...", systemImage: "folder"){
-                viewModel.loadSongs()
-            }.labelStyle(.titleAndIcon)
             Text(viewModel.currentSong?.title ?? "Sin canción")
             List(viewModel.songs) { song in
                 let esActual = song.id == viewModel.currentSong?.id
