@@ -13,7 +13,7 @@ struct Song: Identifiable, Hashable {
     let url: URL
     let duration: TimeInterval
     let artist: String?
-    let artwork: URL?
+    let artwork: Data?
     
 }
 

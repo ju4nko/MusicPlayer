@@ -38,7 +38,9 @@ class PlayerViewModel: NSObject, AVAudioPlayerDelegate {
     
     override convenience init() {
         self.init(songs: [])
-        self.songs = loadMusicFolder()
+        Task {
+            self.songs = await loadMusicFolder()
+        }
     }
     
     func play(_ song: Song) {
@@ -124,19 +126,24 @@ class PlayerViewModel: NSObject, AVAudioPlayerDelegate {
         return songs.firstIndex(where: { $0.id == currentSong.id })
     }
     
-    private func loadBundled(_ name: String, title: String) -> Song? {
+    private func loadBundled(_ name: String, title: String) async -> Song? {
         guard let url = Bundle.main.url(forResource: name, withExtension: "mp3") else { return nil }
-        return makeSong(from: url, title: title)
+        return await makeSong(from: url, title: title)
     }
     
-    private func makeSong(from url: URL, title: String? = nil) -> Song? {
-        let finalTitle = title ?? url.deletingPathExtension().lastPathComponent
-        guard let probe = try? AVAudioPlayer(contentsOf: url) else {return nil}
-        let song: Song = Song(title: finalTitle, url: url, duration: probe.duration, artist: nil, artwork: nil)
-        return song
+    private func makeSong(from url: URL, title: String? = nil) async -> Song? {
+        guard let probe = try? AVAudioPlayer(contentsOf: url) else { return nil }
+        let metadata = await loadMetadata(from: url)   // ← await
+        return Song(
+            title: title ?? metadata.title ?? url.deletingPathExtension().lastPathComponent,
+            url: url,
+            duration: probe.duration,
+            artist: metadata.artist,
+            artwork: metadata.artwork
+        )
     }
     
-    private func loadMusicFolder() -> [Song] {
+    private func loadMusicFolder() async -> [Song] {
         let fm = FileManager.default
         guard let musicURL = fm.urls(for: .musicDirectory, in: .userDomainMask).first else {
             return []
@@ -144,6 +151,38 @@ class PlayerViewModel: NSObject, AVAudioPlayerDelegate {
         let resolvedURL = musicURL.resolvingSymlinksInPath()
         let files = (try? fm.contentsOfDirectory(at: resolvedURL, includingPropertiesForKeys: nil)) ?? []
         let mp3s = files.filter { $0.pathExtension.lowercased() == "mp3" }
-        return mp3s.compactMap { makeSong(from: $0) }
+        var songs: [Song] = []
+        for url in mp3s {
+            if let song = await makeSong(from: url) {
+                songs.append(song)
+            }
+        }
+        return songs
+    }
+    
+    private func loadMetadata(from url: URL) async ->(title:String?, artist:String?, artwork:Data?) {
+        let asset = AVURLAsset(url: url)
+        guard let items = try? await asset.load(.commonMetadata) else {
+            return (nil, nil, nil)
+        }
+        
+        var title: String?
+        var artist: String?
+        var artwork: Data?
+        
+        for item in items {
+            switch item.commonKey {
+            case .commonKeyTitle:
+                title = try? await item.load(.stringValue)
+            case .commonKeyArtist:
+                artist = try? await item.load(.stringValue)
+            case .commonKeyArtwork:
+                artwork = try? await item.load(.dataValue)
+            default:
+                break
+            }
+        }
+        
+        return (title, artist, artwork)
     }
 }
